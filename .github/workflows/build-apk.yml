@@ -34,24 +34,41 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
-          cache: 'gradle'
 
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.6'
 
-      - name: Grant Execute Permission for Gradle Wrapper
-        working-directory: ./android
-        run: chmod +x gradlew
+      - name: Ensure Gradle Wrapper Jar
+        run: |
+          mkdir -p android/gradle/wrapper
+          if [ ! -f android/gradle/wrapper/gradle-wrapper.jar ]; then
+            echo "Downloading gradle-wrapper.jar..."
+            curl -sSL -o android/gradle/wrapper/gradle-wrapper.jar https://raw.githubusercontent.com/gradle/gradle/v8.6.0/gradle/wrapper/gradle-wrapper.jar || \
+            curl -sSL -o android/gradle/wrapper/gradle-wrapper.jar https://repo.maven.apache.org/maven2/org/gradle/gradle-wrapper/8.6/gradle-wrapper-8.6.jar || true
+          fi
+          chmod +x android/gradlew
+
+      - name: Accept Android SDK Licenses
+        run: |
+          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses 2>/dev/null || true
 
       - name: Build Debug APK
         working-directory: ./android
-        run: ./gradlew assembleDebug --stacktrace
+        run: ./gradlew assembleDebug --no-daemon --stacktrace
 
-      - name: Prepare APK Artifacts
+      - name: Verify and Prepare APK
         run: |
           mkdir -p build-output
-          cp android/app/build/outputs/apk/debug/app-debug.apk build-output/RENEW-Household-Maintenance.apk
-          echo "APK build complete: $(ls -lh build-output/)"
+          if [ -f android/app/build/outputs/apk/debug/app-debug.apk ]; then
+            cp android/app/build/outputs/apk/debug/app-debug.apk build-output/RENEW-Household-Maintenance.apk
+            echo "APK successfully built: $(ls -lh build-output/RENEW-Household-Maintenance.apk)"
+          else
+            echo "Error: app-debug.apk not found!"
+            find android/app/build -name "*.apk" || true
+            exit 1
+          fi
 
       - name: Upload APK to GitHub Artifacts
         uses: actions/upload-artifact@v4
