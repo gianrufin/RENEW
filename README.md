@@ -1,73 +1,66 @@
-# RENEW. — Household Maintenance & Alert Scheduler
+# RENEW. — Household Maintenance & Alert Scheduler (Native Android APK & Web)
 
-A mobile-first, offline-ready household maintenance scheduler designed with a **Bold Typography (Brutalist)** aesthetic, custom recurrence engines, QR asset tagging, annual cost forecasting, and an actionable daily morning briefing.
-
----
-
-## 📱 Live Application Links
-
-- **Live Web App (Production/Shared)**: [https://ais-pre-zjyp6uokj7btok5ltaqc7s-187570358840.asia-east1.run.app](https://ais-pre-zjyp6uokj7btok5ltaqc7s-187570358840.asia-east1.run.app)
-- **Development Preview**: [https://ais-dev-zjyp6uokj7btok5ltaqc7s-187570358840.asia-east1.run.app](https://ais-dev-zjyp6uokj7btok5ltaqc7s-187570358840.asia-east1.run.app)
-
-> ### 📲 Installing on Android (PWA / WebAPK)
-> To run the app as a standalone Android app with full-screen access, no browser address bar, and offline support:
-> 1. Open the **Live Web App URL** in Google Chrome on your Android device:
->    `https://ais-pre-zjyp6uokj7btok5ltaqc7s-187570358840.asia-east1.run.app`
-> 2. Tap the **Three Dots (⋮)** menu in the top-right corner of Chrome.
-> 3. Tap **"Install app"** or **"Add to Home screen"**.
-> 4. Android will generate and install the standalone **WebAPK** onto your home screen and app drawer with the native app icon and splash screen.
+A household maintenance scheduler crafted with a **Bold Typography (Brutalist)** aesthetic, dual recurrence scheduling, Room SQLite offline database, QR appliance barcode scanning, annual cost forecasting, and an actionable daily morning briefing.
 
 ---
 
-## ✨ Key Features
+## 📱 Live Web & Instant Installable WebAPK
 
-### 1. 📅 Dual Scheduling Engine
-- **Exact Date Tasks**: Pinpoint exact due dates for critical maintenance (e.g., car oil changes, vet appointments, water filter replacement).
-- **"On This Week" Flexible Routines**: Schedule weekly tasks (e.g., wash bed sheets, smoke alarm test, deep clean bathroom) without arbitrary daily pressure.
+- **Live Web App**: [https://ais-pre-zjyp6uokj7btok5ltaqc7s-187570358840.asia-east1.run.app](https://ais-pre-zjyp6uokj7btok5ltaqc7s-187570358840.asia-east1.run.app)
+- **Development App**: [https://ais-dev-zjyp6uokj7btok5ltaqc7s-187570358840.asia-east1.run.app](https://ais-dev-zjyp6uokj7btok5ltaqc7s-187570358840.asia-east1.run.app)
 
-### 2. ☀️ Morning Alert Briefing (Daily Splash)
-- High-contrast, full-screen morning summary displaying overdue items, today's targets, and this week's routines.
-- Quick 1-click **Complete** and **+3-Day Snooze** actions directly from the briefing screen.
-
-### 3. 📷 QR Appliance Asset Tagging & Scanner
-- Generate printable QR asset tags for appliances and fixtures (HVAC unit, furnace, refrigerator, vehicle).
-- Built-in live camera barcode scanner to scan physical QR codes and immediately log service records or view history.
-
-### 4. 💰 Annual Replacement Budget & Cost Planner
-- Automatically calculates monthly and annualized recurring maintenance costs.
-- Visual breakdown across categories (Home & Appliances, Automotive, Health & Hygiene, Pets, Safety).
-
-### 5. 🎨 Brutalist OLED Dark & Light Themes
-- OLED Dark Mode, Crisp Light Mode, or automatic System OS match.
-- Bold typography with Space Grotesk and Plus Jakarta Sans.
-- Sound effect chimes upon task completion.
-
-### 6. 🛡️ 100% Offline-First Privacy & Backup
-- Zero external database lock-in; stored locally in device storage.
-- 1-click **JSON Backup Export & Import** in Settings for safe manual migration across devices.
+> ### ⚡ Instant 1-Tap Android WebAPK Installation
+> 1. Open the **Live Web App** link in **Google Chrome** on your Android device.
+> 2. Tap the **Three Dots (⋮)** menu in Chrome.
+> 3. Tap **"Install app"** / **"Add to Home screen"**.
+> 4. Chrome will instantly generate and install a native **WebAPK** onto your Android phone with an app icon in your app drawer, standalone full-screen window, and full offline caching.
 
 ---
 
-## 🛠️ Tech Stack
+## 🤖 Official Native Android App (Kotlin + Jetpack Compose)
 
-- **Framework**: React 18 with TypeScript & Vite
-- **Styling**: Tailwind CSS (Brutalist / Bold Typography)
-- **Icons**: Lucide React
-- **Animations**: Motion (`motion/react`)
-- **Backend Server**: Express.js with Node
-- **Camera/QR**: HTML5-QRCode scanner
+The complete native Android Studio source code is located in the **`/android`** directory of this repository.
 
----
+### 📦 Project Architecture
+- **Language**: Kotlin 1.9+
+- **UI Toolkit**: Jetpack Compose with Material 3 & Bold Typography
+- **Database**: Android Room SQLite (100% offline, zero cloud account required)
+- **Background Tasks**: AndroidX WorkManager (for 24h periodic morning briefing reminders)
+- **Hardware Integration**: CameraX & Google ML Kit Barcode Scanning for physical QR appliance tags
 
-## 🚀 Running Locally
+### 🛠️ How to Build the `.apk` File
 
+#### Option 1: Open in Android Studio (Recommended)
+1. Export/Download the project as a **ZIP** (or clone the repository via Git) from the AI Studio Settings menu.
+2. Open **Android Studio** (Hedgehog, Iguana, or Jellyfish).
+3. Click **File → Open** and select the **`android`** folder.
+4. Let Gradle sync dependencies.
+5. In the top menu, go to **Build → Build Bundle(s) / APK(s) → Build APK(s)**.
+6. Android Studio will generate the installable debug APK at:
+   ```
+   android/app/build/outputs/apk/debug/app-debug.apk
+   ```
+7. Transfer `app-debug.apk` to your Android device and tap to install!
+
+#### Option 2: Command Line (Gradle)
 ```bash
-# 1. Install dependencies
-npm install
-
-# 2. Run the development server
-npm run dev
-
-# 3. Build for production
-npm run build
+cd android
+./gradlew assembleDebug
 ```
+The compiled APK will be created at `app/build/outputs/apk/debug/app-debug.apk`.
+
+---
+
+## ✨ Features Breakdown
+
+1. **Dual Recurrence Modes**:
+   - **Exact Date**: Critical tasks (HVAC air filters, synthetic car oil, pet chew tablets).
+   - **This Week Routines**: Flexible weekly targets (wash bed sheets, smoke alarm tests) without day-of-week pressure.
+2. **Actionable Morning Briefing (Splash Screen)**:
+   - Full-screen summary on launch highlighting overdue items and today's schedule with 1-click **Complete** and **+3-Day Snooze**.
+3. **QR Appliance Asset Tagging & Scanner**:
+   - Generate printable QR asset codes and scan them with your phone's camera to immediately record maintenance logs.
+4. **Annual Replacement Budget & Cost Planner**:
+   - Automatically projects monthly run-rate and annual maintenance expenses across categories.
+5. **100% Offline-First Privacy**:
+   - Local Room SQLite database storage with zero telemetry or cloud lock-in.
