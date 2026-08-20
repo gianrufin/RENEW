@@ -1,0 +1,6 @@
+{
+  "name": "RemindMe: Household Maintenance & Alert Scheduler",
+  "description": "Smart recurring maintenance schedule and alert manager for household items, appliances, personal care, pet health, and vehicles.",
+  "requestFramePermissions": ["notifications", "camera"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
