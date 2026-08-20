@@ -27,15 +27,6 @@ export type ScheduleType = 'exact_date' | 'flexible_week';
 
 export type ActiveAppTab = 'alerts' | 'this_week' | 'budget_planner' | 'qr_scanner' | 'settings';
 
-export interface GoogleDriveBackupSettings {
-  autoBackupDaily: boolean;
-  lastBackupDate?: string;
-  connectedEmail?: string;
-  accessToken?: string;
-  tokenExpiresAt?: number;
-  backupFileId?: string;
-}
-
 export interface MaintenanceTask {
   id: string;
   title: string;

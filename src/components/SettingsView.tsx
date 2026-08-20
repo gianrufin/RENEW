@@ -3,33 +3,26 @@ import {
   Sun, 
   Moon, 
   Laptop, 
-  Cloud, 
-  CloudCheck, 
-  CloudUpload, 
-  CloudDownload, 
   Bell, 
   Volume2, 
   VolumeX, 
-  Sparkles, 
   Download, 
   Upload, 
   Check, 
   AlertTriangle, 
-  RefreshCw, 
-  Smartphone,
-  ShieldCheck,
-  Zap,
-  Info
+  HardDrive,
+  Database,
+  Trash2,
+  RefreshCw,
+  Info,
+  ShieldCheck
 } from 'lucide-react';
-import { ThemePreference, GoogleDriveBackupSettings, MaintenanceTask } from '../types';
-import { requestGoogleDriveAccessToken, uploadBackupToDrive, downloadBackupFromDrive } from '../utils/googleDrive';
+import { ThemePreference, MaintenanceTask } from '../types';
 import { sound } from '../utils/sound';
 
 interface SettingsViewProps {
   theme: ThemePreference;
   onThemeChange: (theme: ThemePreference) => void;
-  driveSettings: GoogleDriveBackupSettings;
-  onDriveSettingsChange: (settings: GoogleDriveBackupSettings) => void;
   tasks: MaintenanceTask[];
   onRestoreTasks: (newTasks: MaintenanceTask[]) => void;
   soundEnabled: boolean;
@@ -44,8 +37,6 @@ interface SettingsViewProps {
 export function SettingsView({
   theme,
   onThemeChange,
-  driveSettings,
-  onDriveSettingsChange,
   tasks,
   onRestoreTasks,
   soundEnabled,
@@ -56,124 +47,26 @@ export function SettingsView({
   onToggleMorningSplash,
   onOpenMorningSplash
 }: SettingsViewProps) {
-  const [isSyncingDrive, setIsSyncingDrive] = useState(false);
-  const [driveMessage, setDriveMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [localExported, setLocalExported] = useState(false);
-
-  // Connect Google Drive
-  const handleConnectDrive = async () => {
-    try {
-      setIsSyncingDrive(true);
-      setDriveMessage(null);
-      const authResult = await requestGoogleDriveAccessToken();
-      
-      const newSettings: GoogleDriveBackupSettings = {
-        ...driveSettings,
-        accessToken: authResult.accessToken,
-        connectedEmail: authResult.email || 'Google Drive Connected',
-        tokenExpiresAt: Date.now() + authResult.expiresIn * 1000,
-        autoBackupDaily: true
-      };
-
-      // Perform initial backup
-      const backupRes = await uploadBackupToDrive(tasks, authResult.accessToken);
-      newSettings.lastBackupDate = backupRes.backupDate;
-      newSettings.backupFileId = backupRes.fileId;
-
-      onDriveSettingsChange(newSettings);
-      setDriveMessage({ type: 'success', text: `Connected as ${authResult.email || 'Google Account'} & backed up ${tasks.length} tasks!` });
-      sound.playSuccess();
-    } catch (err: any) {
-      console.error('Google Drive auth error:', err);
-      setDriveMessage({ type: 'error', text: err.message || 'Failed to authenticate Google Drive' });
-    } finally {
-      setIsSyncingDrive(false);
-    }
-  };
-
-  // Manual Backup to Google Drive
-  const handleManualBackup = async () => {
-    if (!driveSettings.accessToken) {
-      handleConnectDrive();
-      return;
-    }
-
-    try {
-      setIsSyncingDrive(true);
-      setDriveMessage(null);
-      const result = await uploadBackupToDrive(tasks, driveSettings.accessToken);
-      
-      onDriveSettingsChange({
-        ...driveSettings,
-        lastBackupDate: result.backupDate,
-        backupFileId: result.fileId
-      });
-
-      setDriveMessage({ type: 'success', text: `Backup complete! Saved ${result.taskCount} tasks to Google Drive.` });
-      sound.playSuccess();
-    } catch (err: any) {
-      console.error('Manual drive backup error:', err);
-      // If unauthorized token, prompt reconnect
-      if (err.message?.includes('401') || err.message?.includes('token') || err.message?.includes('Status 401')) {
-        setDriveMessage({ type: 'error', text: 'Session expired. Reconnecting Google Drive...' });
-        handleConnectDrive();
-      } else {
-        setDriveMessage({ type: 'error', text: err.message || 'Failed to backup to Google Drive' });
-      }
-    } finally {
-      setIsSyncingDrive(false);
-    }
-  };
-
-  // Restore from Google Drive
-  const handleRestoreFromDrive = async () => {
-    if (!driveSettings.accessToken) {
-      handleConnectDrive();
-      return;
-    }
-
-    if (!window.confirm('Restore schedules from Google Drive? This will update your local task database with the cloud backup.')) {
-      return;
-    }
-
-    try {
-      setIsSyncingDrive(true);
-      setDriveMessage(null);
-      const restoreResult = await downloadBackupFromDrive(driveSettings.accessToken);
-      onRestoreTasks(restoreResult.tasks);
-      setDriveMessage({ type: 'success', text: `Restored ${restoreResult.tasks.length} schedules from Google Drive backup (${new Date(restoreResult.backupDate).toLocaleDateString()})!` });
-      sound.playSuccess();
-    } catch (err: any) {
-      console.error('Drive restore error:', err);
-      setDriveMessage({ type: 'error', text: err.message || 'Failed to download backup from Google Drive' });
-    } finally {
-      setIsSyncingDrive(false);
-    }
-  };
-
-  const handleDisconnectDrive = () => {
-    onDriveSettingsChange({
-      autoBackupDaily: false,
-      accessToken: undefined,
-      connectedEmail: undefined,
-      tokenExpiresAt: undefined,
-      lastBackupDate: driveSettings.lastBackupDate,
-      backupFileId: driveSettings.backupFileId
-    });
-    setDriveMessage({ type: 'success', text: 'Google Drive disconnected from local device.' });
-  };
+  const [statusMessage, setStatusMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   // Local JSON file export
   const handleExportLocalJson = () => {
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(tasks, null, 2));
-    const downloadAnchor = document.createElement('a');
-    downloadAnchor.setAttribute("href", dataStr);
-    downloadAnchor.setAttribute("download", `remindme_backup_${new Date().toISOString().split('T')[0]}.json`);
-    document.body.appendChild(downloadAnchor);
-    downloadAnchor.click();
-    downloadAnchor.remove();
-    setLocalExported(true);
-    setTimeout(() => setLocalExported(false), 3000);
+    try {
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(tasks, null, 2));
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute("download", `remindme_backup_${new Date().toISOString().split('T')[0]}.json`);
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+      setLocalExported(true);
+      setStatusMessage({ type: 'success', text: `Successfully exported ${tasks.length} tasks to JSON backup file.` });
+      sound.playSuccess();
+      setTimeout(() => setLocalExported(false), 3000);
+    } catch {
+      setStatusMessage({ type: 'error', text: 'Failed to export backup JSON.' });
+    }
   };
 
   // Local JSON file import
@@ -187,18 +80,23 @@ export function SettingsView({
           if (Array.isArray(parsed)) {
             onRestoreTasks(parsed);
             sound.playSuccess();
-            alert(`Imported ${parsed.length} tasks successfully!`);
+            setStatusMessage({ type: 'success', text: `Imported ${parsed.length} tasks successfully!` });
           } else if (parsed && Array.isArray(parsed.tasks)) {
             onRestoreTasks(parsed.tasks);
             sound.playSuccess();
-            alert(`Imported ${parsed.tasks.length} tasks successfully!`);
+            setStatusMessage({ type: 'success', text: `Imported ${parsed.tasks.length} tasks successfully!` });
+          } else {
+            setStatusMessage({ type: 'error', text: 'Invalid JSON backup format.' });
           }
         } catch {
-          alert('Invalid JSON backup file.');
+          setStatusMessage({ type: 'error', text: 'Could not parse JSON backup file.' });
         }
       };
     }
   };
+
+  // Total history logs count
+  const totalHistoryCount = tasks.reduce((sum, t) => sum + (t.history?.length || 0), 0);
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto pb-12">
@@ -209,16 +107,37 @@ export function SettingsView({
             CONTROL CENTER
           </span>
           <span className="text-[10px] font-bold text-zinc-500 dark:text-[#737373] tracking-widest uppercase">
-            SETTINGS & CLOUD MIRROR
+            LOCAL SETTINGS & STORAGE
           </span>
         </div>
         <h2 className="text-3xl sm:text-4xl font-black uppercase tracking-tight text-zinc-900 dark:text-[#F5F5F5] font-display">
           APPLICATION SETTINGS<span className="text-[#FF3E00]">.</span>
         </h2>
         <p className="text-xs text-zinc-600 dark:text-[#A3A3A3] uppercase font-bold tracking-wider mt-1">
-          Customize display themes, configure automatic Google Drive backups, manage alerts, and export data.
+          Manage appearance themes, notification preferences, sound feedback, and local offline backups.
         </p>
       </div>
+
+      {/* Status Feedback Message */}
+      {statusMessage && (
+        <div className={`p-4 border text-xs font-bold flex items-center justify-between gap-2.5 ${
+          statusMessage.type === 'success'
+            ? 'border-emerald-500 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400'
+            : 'border-red-500 bg-red-500/10 text-red-700 dark:text-red-400'
+        }`}>
+          <div className="flex items-center gap-2">
+            {statusMessage.type === 'success' ? <Check className="w-4 h-4" /> : <AlertTriangle className="w-4 h-4" />}
+            <span>{statusMessage.text}</span>
+          </div>
+          <button 
+            type="button" 
+            onClick={() => setStatusMessage(null)}
+            className="text-[10px] uppercase underline cursor-pointer"
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
 
       {/* 1. Theme Selector Section */}
       <div className="p-6 border border-zinc-300 dark:border-[#262626] bg-white dark:bg-[#121212] space-y-4">
@@ -228,7 +147,7 @@ export function SettingsView({
             APPEARANCE & THEME
           </h3>
           <p className="text-xs text-zinc-500 dark:text-[#737373] uppercase font-bold tracking-wider mt-0.5">
-            Select between Dark brutalist mode, clean Light mode, or System OS match.
+            Select between Dark brutalist OLED mode, clean Light mode, or System OS match.
           </p>
         </div>
 
@@ -280,151 +199,7 @@ export function SettingsView({
         </div>
       </div>
 
-      {/* 2. Google Drive Auto-Backup Section */}
-      <div className="p-6 border-2 border-zinc-300 dark:border-[#262626] bg-white dark:bg-[#121212] space-y-5">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div>
-            <div className="flex items-center gap-2">
-              <h3 className="text-sm font-black uppercase tracking-widest text-zinc-900 dark:text-[#F5F5F5] flex items-center gap-2">
-                <Cloud className="w-4 h-4 text-[#FF3E00]" />
-                GOOGLE DRIVE AUTO-BACKUP
-              </h3>
-              {driveSettings.accessToken ? (
-                <span className="text-[9px] font-black uppercase tracking-widest px-2 py-0.5 bg-emerald-500/10 border border-emerald-500 text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
-                  <ShieldCheck className="w-3 h-3" />
-                  CONNECTED
-                </span>
-              ) : (
-                <span className="text-[9px] font-black uppercase tracking-widest px-2 py-0.5 bg-zinc-100 dark:bg-[#171717] border border-zinc-300 dark:border-[#262626] text-zinc-500">
-                  OFFLINE
-                </span>
-              )}
-            </div>
-            <p className="text-xs text-zinc-500 dark:text-[#737373] uppercase font-bold tracking-wider mt-0.5">
-              Securely back up your maintenance timelines once daily to your personal Google Drive account.
-            </p>
-          </div>
-
-          {driveSettings.accessToken ? (
-            <button
-              type="button"
-              onClick={handleDisconnectDrive}
-              className="text-xs font-bold uppercase tracking-wider text-red-500 hover:underline self-start sm:self-auto cursor-pointer"
-            >
-              Disconnect
-            </button>
-          ) : (
-            <button
-              type="button"
-              onClick={handleConnectDrive}
-              disabled={isSyncingDrive}
-              className="px-5 py-2.5 bg-[#FF3E00] hover:bg-[#FF3E00]/90 text-black font-black text-xs uppercase tracking-widest cursor-pointer flex items-center gap-2 shadow-xs"
-            >
-              <CloudUpload className="w-4 h-4 stroke-[3]" />
-              {isSyncingDrive ? 'CONNECTING...' : 'CONNECT GOOGLE DRIVE'}
-            </button>
-          )}
-        </div>
-
-        {/* Status Box */}
-        {driveMessage && (
-          <div className={`p-3.5 border text-xs font-bold flex items-center gap-2.5 ${
-            driveMessage.type === 'success'
-              ? 'border-emerald-500 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400'
-              : 'border-red-500 bg-red-500/10 text-red-700 dark:text-red-400'
-          }`}>
-            {driveMessage.type === 'success' ? <Check className="w-4 h-4" /> : <AlertTriangle className="w-4 h-4" />}
-            <span>{driveMessage.text}</span>
-          </div>
-        )}
-
-        {/* Connected state controls */}
-        {driveSettings.accessToken && (
-          <div className="p-4 border border-zinc-200 dark:border-[#262626] bg-zinc-50 dark:bg-[#171717] space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
-              <div>
-                <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500 dark:text-[#737373] block">
-                  CONNECTED ACCOUNT:
-                </span>
-                <span className="font-bold text-zinc-900 dark:text-[#F5F5F5]">
-                  {driveSettings.connectedEmail || 'Google Drive Authorized'}
-                </span>
-              </div>
-              <div>
-                <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500 dark:text-[#737373] block">
-                  LAST BACKUP DATE:
-                </span>
-                <span className="font-bold text-[#FF3E00]">
-                  {driveSettings.lastBackupDate 
-                    ? new Date(driveSettings.lastBackupDate).toLocaleString() 
-                    : 'Pending initial sync'}
-                </span>
-              </div>
-            </div>
-
-            {/* Daily auto backup toggle */}
-            <div className="flex items-center justify-between pt-3 border-t border-zinc-200 dark:border-[#262626]">
-              <div>
-                <span className="text-xs font-black uppercase tracking-wider text-zinc-900 dark:text-[#F5F5F5] block">
-                  Auto-Backup Once Daily
-                </span>
-                <span className="text-[10px] text-zinc-500 dark:text-[#737373] uppercase font-bold tracking-wider">
-                  Silently uploads latest schedule when launching or updating items
-                </span>
-              </div>
-              <button
-                type="button"
-                onClick={() => onDriveSettingsChange({
-                  ...driveSettings,
-                  autoBackupDaily: !driveSettings.autoBackupDaily
-                })}
-                className={`w-12 h-6 flex items-center rounded-full p-1 cursor-pointer transition-colors ${
-                  driveSettings.autoBackupDaily ? 'bg-[#FF3E00]' : 'bg-zinc-300 dark:bg-[#262626]'
-                }`}
-              >
-                <div className={`bg-black dark:bg-white w-4 h-4 rounded-full shadow-md transform transition-transform ${
-                  driveSettings.autoBackupDaily ? 'translate-x-6' : 'translate-x-0'
-                }`} />
-              </button>
-            </div>
-
-            {/* Manual buttons */}
-            <div className="flex flex-wrap items-center gap-3 pt-2">
-              <button
-                type="button"
-                onClick={handleManualBackup}
-                disabled={isSyncingDrive}
-                className="px-4 py-2 border border-zinc-900 dark:border-[#F5F5F5] bg-zinc-900 dark:bg-[#F5F5F5] text-white dark:text-[#0A0A0A] font-black text-xs uppercase tracking-widest cursor-pointer flex items-center gap-2 hover:opacity-90"
-              >
-                <RefreshCw className={`w-3.5 h-3.5 ${isSyncingDrive ? 'animate-spin' : ''}`} />
-                BACKUP NOW
-              </button>
-
-              <button
-                type="button"
-                onClick={handleRestoreFromDrive}
-                disabled={isSyncingDrive}
-                className="px-4 py-2 border border-zinc-300 dark:border-[#262626] bg-white dark:bg-[#121212] text-zinc-700 dark:text-[#A3A3A3] hover:text-zinc-900 dark:hover:text-[#F5F5F5] font-black text-xs uppercase tracking-widest cursor-pointer flex items-center gap-2"
-              >
-                <CloudDownload className="w-3.5 h-3.5" />
-                RESTORE FROM DRIVE
-              </button>
-            </div>
-          </div>
-        )}
-
-        <div className="p-3 border border-zinc-200 dark:border-[#262626] bg-zinc-50/50 dark:bg-[#171717]/40 text-[11px] text-zinc-500 dark:text-[#737373] space-y-1">
-          <p className="font-bold uppercase tracking-wider flex items-center gap-1.5">
-            <Info className="w-3.5 h-3.5 text-[#FF3E00]" />
-            SCOPED PERMISSION NOTICE:
-          </p>
-          <p>
-            RemindMe only accesses files it creates (<code>drive.file</code> scope). Your personal Drive files and folders remain private and untouched.
-          </p>
-        </div>
-      </div>
-
-      {/* 3. Notifications & Splash Section */}
+      {/* 2. Notifications & Daily Splash Briefing */}
       <div className="p-6 border border-zinc-300 dark:border-[#262626] bg-white dark:bg-[#121212] space-y-4">
         <div>
           <h3 className="text-sm font-black uppercase tracking-widest text-zinc-900 dark:text-[#F5F5F5] flex items-center gap-2">
@@ -451,7 +226,7 @@ export function SettingsView({
               <button
                 type="button"
                 onClick={onOpenMorningSplash}
-                className="px-2.5 py-1 text-[10px] font-black uppercase tracking-wider border border-zinc-300 dark:border-[#262626] bg-zinc-50 dark:bg-[#171717] text-zinc-700 dark:text-[#A3A3A3] hover:text-zinc-900 cursor-pointer"
+                className="px-2.5 py-1 text-[10px] font-black uppercase tracking-wider border border-zinc-300 dark:border-[#262626] bg-zinc-50 dark:bg-[#171717] text-zinc-700 dark:text-[#A3A3A3] hover:text-zinc-900 dark:hover:text-[#F5F5F5] cursor-pointer"
               >
                 PREVIEW SPLASH
               </button>
@@ -517,15 +292,15 @@ export function SettingsView({
         </div>
       </div>
 
-      {/* 4. Local File Backup Export / Import */}
+      {/* 3. Offline JSON Backup & Restore Section */}
       <div className="p-6 border border-zinc-300 dark:border-[#262626] bg-white dark:bg-[#121212] space-y-4">
         <div>
           <h3 className="text-sm font-black uppercase tracking-widest text-zinc-900 dark:text-[#F5F5F5] flex items-center gap-2">
-            <Download className="w-4 h-4 text-[#FF3E00]" />
-            OFFLINE FILE BACKUP & RESTORE
+            <HardDrive className="w-4 h-4 text-[#FF3E00]" />
+            LOCAL OFFLINE BACKUP & RESTORE
           </h3>
           <p className="text-xs text-zinc-500 dark:text-[#737373] uppercase font-bold tracking-wider mt-0.5">
-            Download an offline JSON database file to transfer between devices without logging into Google.
+            Export a full JSON backup of all your schedules and maintenance history, or import from a previous file.
           </p>
         </div>
 
@@ -533,13 +308,13 @@ export function SettingsView({
           <button
             type="button"
             onClick={handleExportLocalJson}
-            className="px-4 py-2 border border-zinc-300 dark:border-[#262626] bg-zinc-50 dark:bg-[#171717] text-zinc-800 dark:text-[#F5F5F5] font-black text-xs uppercase tracking-widest hover:border-zinc-500 cursor-pointer flex items-center gap-2"
+            className="px-4 py-2.5 border border-zinc-300 dark:border-[#262626] bg-zinc-50 dark:bg-[#171717] text-zinc-800 dark:text-[#F5F5F5] font-black text-xs uppercase tracking-widest hover:border-zinc-500 cursor-pointer flex items-center gap-2"
           >
             {localExported ? <Check className="w-4 h-4 text-emerald-500" /> : <Download className="w-4 h-4" />}
             {localExported ? 'EXPORTED JSON' : 'EXPORT BACKUP (.JSON)'}
           </button>
 
-          <label className="px-4 py-2 border border-zinc-300 dark:border-[#262626] bg-zinc-50 dark:bg-[#171717] text-zinc-800 dark:text-[#F5F5F5] font-black text-xs uppercase tracking-widest hover:border-zinc-500 cursor-pointer flex items-center gap-2">
+          <label className="px-4 py-2.5 border border-zinc-300 dark:border-[#262626] bg-zinc-50 dark:bg-[#171717] text-zinc-800 dark:text-[#F5F5F5] font-black text-xs uppercase tracking-widest hover:border-zinc-500 cursor-pointer flex items-center gap-2">
             <Upload className="w-4 h-4" />
             IMPORT BACKUP (.JSON)
             <input
@@ -549,6 +324,58 @@ export function SettingsView({
               className="hidden"
             />
           </label>
+        </div>
+      </div>
+
+      {/* 4. Local Storage Health & Diagnostics */}
+      <div className="p-6 border border-zinc-300 dark:border-[#262626] bg-white dark:bg-[#121212] space-y-4">
+        <div>
+          <h3 className="text-sm font-black uppercase tracking-widest text-zinc-900 dark:text-[#F5F5F5] flex items-center gap-2">
+            <Database className="w-4 h-4 text-[#FF3E00]" />
+            LOCAL DATABASE STATUS
+          </h3>
+          <p className="text-xs text-zinc-500 dark:text-[#737373] uppercase font-bold tracking-wider mt-0.5">
+            Overview of stored household items, service records, and local persistence.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          <div className="p-3.5 border border-zinc-200 dark:border-[#262626] bg-zinc-50 dark:bg-[#171717]">
+            <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500 dark:text-[#737373] block">
+              TRACKED SCHEDULES
+            </span>
+            <span className="text-2xl font-black text-zinc-900 dark:text-[#F5F5F5] font-display mt-0.5 block">
+              {tasks.length}
+            </span>
+          </div>
+
+          <div className="p-3.5 border border-zinc-200 dark:border-[#262626] bg-zinc-50 dark:bg-[#171717]">
+            <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500 dark:text-[#737373] block">
+              SERVICE LOG ENTRIES
+            </span>
+            <span className="text-2xl font-black text-zinc-900 dark:text-[#F5F5F5] font-display mt-0.5 block">
+              {totalHistoryCount}
+            </span>
+          </div>
+
+          <div className="p-3.5 border border-zinc-200 dark:border-[#262626] bg-zinc-50 dark:bg-[#171717] col-span-2 sm:col-span-1">
+            <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500 dark:text-[#737373] block">
+              STORAGE ENGINE
+            </span>
+            <span className="text-xs font-black text-emerald-600 dark:text-emerald-400 mt-1 flex items-center gap-1.5 uppercase">
+              <ShieldCheck className="w-4 h-4" /> OFFLINE FIRST
+            </span>
+          </div>
+        </div>
+
+        <div className="p-3 border border-zinc-200 dark:border-[#262626] bg-zinc-50/50 dark:bg-[#171717]/40 text-[11px] text-zinc-500 dark:text-[#737373] space-y-1">
+          <p className="font-bold uppercase tracking-wider flex items-center gap-1.5">
+            <Info className="w-3.5 h-3.5 text-[#FF3E00]" />
+            DATA PRIVACY NOTICE:
+          </p>
+          <p>
+            All schedules and maintenance logs are stored locally on your device in browser storage. No third-party accounts or cloud databases are connected.
+          </p>
         </div>
       </div>
     </div>

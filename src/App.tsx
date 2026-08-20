@@ -22,8 +22,7 @@ import {
   PresetTemplate, 
   CategoryType, 
   ActiveAppTab, 
-  ThemePreference, 
-  GoogleDriveBackupSettings 
+  ThemePreference 
 } from './types';
 import { PRESET_TEMPLATES } from './data/presets';
 import { Navbar } from './components/Navbar';
@@ -44,13 +43,11 @@ import { MorningSplashModal } from './components/MorningSplashModal';
 import { BottomNavBar } from './components/BottomNavBar';
 import { getTaskStatus, getDaysRemaining, calculateNextDueDate } from './utils/dateUtils';
 import { sound } from './utils/sound';
-import { checkDailyAutoBackup } from './utils/googleDrive';
 
 const STORAGE_KEY = 'remindme_household_tasks_v2';
 const SOUND_KEY = 'remindme_sound_enabled';
 const THEME_KEY = 'remindme_theme_preference';
 const SPLASH_LAST_DATE_KEY = 'remindme_splash_last_shown_date';
-const DRIVE_SETTINGS_KEY = 'remindme_gdrive_settings';
 
 // Initial realistic default tasks matching the user's explicit prompt
 const DEFAULT_INITIAL_TASKS: MaintenanceTask[] = [
@@ -186,20 +183,6 @@ export default function App() {
     return 'dark'; // Default to bold typography dark archetype
   });
 
-  // Google Drive Settings state
-  const [driveSettings, setDriveSettings] = useState<GoogleDriveBackupSettings>(() => {
-    try {
-      const stored = localStorage.getItem(DRIVE_SETTINGS_KEY);
-      if (stored) return JSON.parse(stored);
-    } catch {}
-    return {
-      autoBackupDaily: true,
-      lastBackupTimestamp: null,
-      isConnected: false,
-      userEmail: null
-    };
-  });
-
   // Load stored tasks or initial presets
   const [tasks, setTasks] = useState<MaintenanceTask[]>(() => {
     try {
@@ -292,22 +275,6 @@ export default function App() {
       console.error('Failed to save tasks', e);
     }
   }, [tasks]);
-
-  // Save drive settings
-  useEffect(() => {
-    try {
-      localStorage.setItem(DRIVE_SETTINGS_KEY, JSON.stringify(driveSettings));
-    } catch (e) {
-      console.error('Failed to save drive settings', e);
-    }
-  }, [driveSettings]);
-
-  // Automatic Daily Google Drive Backup Check
-  useEffect(() => {
-    checkDailyAutoBackup(tasks, driveSettings, (updated) => {
-      setDriveSettings(updated);
-    });
-  }, [driveSettings.isConnected, driveSettings.autoBackupDaily, driveSettings.accessToken, tasks]);
 
   // Check notification permission on mount
   useEffect(() => {
@@ -576,7 +543,6 @@ export default function App() {
         soundEnabled={soundEnabled}
         onToggleSound={handleToggleSound}
         overdueCount={overdueTasksCount}
-        isDriveConnected={driveSettings.isConnected}
       />
 
       {/* Main Content View Switcher */}
@@ -627,7 +593,7 @@ export default function App() {
             }`}
           >
             <Settings className="w-3.5 h-3.5" />
-            Android & Drive Backup
+            Settings & Storage
           </button>
         </div>
 
@@ -750,13 +716,11 @@ export default function App() {
           />
         )}
 
-        {/* TAB 4: SETTINGS & ANDROID / DRIVE BACKUP */}
+        {/* TAB 4: SETTINGS & LOCAL STORAGE */}
         {activeTab === 'settings' && (
           <SettingsView
             theme={theme}
             onThemeChange={handleThemeChange}
-            driveSettings={driveSettings}
-            onDriveSettingsChange={setDriveSettings}
             tasks={tasks}
             onRestoreTasks={(importedTasks) => {
               setTasks(importedTasks);

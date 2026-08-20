@@ -6,15 +6,8 @@ import {
   Calendar, 
   Layers, 
   Search, 
-  QrCode, 
-  CloudCheck, 
-  Volume2, 
-  VolumeX, 
-  Sun, 
-  Moon,
-  Laptop
+  QrCode
 } from 'lucide-react';
-import { ThemePreference } from '../types';
 
 interface NavbarProps {
   onNewTask: () => void;
@@ -30,7 +23,6 @@ interface NavbarProps {
   soundEnabled: boolean;
   onToggleSound: () => void;
   overdueCount: number;
-  isDriveConnected?: boolean;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -46,8 +38,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onRequestNotificationPermission,
   soundEnabled,
   onToggleSound,
-  overdueCount,
-  isDriveConnected
+  overdueCount
 }) => {
   return (
     <header className="sticky top-0 z-30 w-full border-b border-zinc-200 dark:border-[#262626] bg-white/95 dark:bg-[#0A0A0A]/95 backdrop-blur-md transition-colors duration-200">
@@ -58,14 +49,6 @@ export const Navbar: React.FC<NavbarProps> = ({
             <div className="text-xl sm:text-3xl font-black tracking-tighter uppercase text-zinc-900 dark:text-[#F5F5F5] font-display flex items-baseline">
               RENEW<span className="text-[#FF3E00]">.</span>
             </div>
-            
-            {/* Google Drive Status Badge */}
-            {isDriveConnected && (
-              <span className="hidden sm:inline-flex items-center gap-1 text-[9px] font-black uppercase tracking-wider px-2 py-0.5 border border-emerald-500/40 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                DRIVE SYNC
-              </span>
-            )}
           </div>
 
           {/* Search Input */}
