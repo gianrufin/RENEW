@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Neon Orange Square Background Accent -->
+    <path
+        android:fillColor="#FF3E00"
+        android:pathData="M34,34h40v40h-40z" />
+    <!-- Inner Black Graphic -->
+    <path
+        android:fillColor="#0A0A0A"
+        android:pathData="M42,42h24v24h-24z" />
+    <!-- Core Accent -->
+    <path
+        android:fillColor="#FF3E00"
+        android:pathData="M48,48h12v12h-12z" />
+</vector>

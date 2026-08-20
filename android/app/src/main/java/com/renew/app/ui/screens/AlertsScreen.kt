@@ -26,6 +26,7 @@ import com.renew.app.ui.theme.NeonOrange
 import com.renew.app.ui.theme.StatusOverdue
 import com.renew.app.viewmodel.TaskViewModel
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AlertsScreen(
     viewModel: TaskViewModel,

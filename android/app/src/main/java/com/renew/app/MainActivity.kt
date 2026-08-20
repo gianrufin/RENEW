@@ -50,6 +50,7 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RenewApp(viewModel: TaskViewModel) {
     var currentTab by remember { mutableStateOf(AppTab.ALERTS) }

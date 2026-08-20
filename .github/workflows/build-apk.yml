@@ -84,6 +84,7 @@ jobs:
           files: build-output/RENEW-Household-Maintenance.apk
           tag_name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'latest' }}
           name: ${{ startsWith(github.ref, 'refs/tags/') && format('RENEW App {0}', github.ref_name) || 'RENEW Native Android App (Latest Build)' }}
+          make_latest: true
           body: |
             ## 📱 RENEW. — Household Maintenance & Alert Scheduler
             
