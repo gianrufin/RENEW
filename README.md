@@ -4,50 +4,58 @@ A household maintenance scheduler crafted with a **Bold Typography (Brutalist)**
 
 ---
 
-## 📱 Live Web & Instant Installable WebAPK
+## ⚡ 1. GitHub Actions Automated APK Builder & Repository Hosting
+
+This repository is equipped with an automated **GitHub Actions CI/CD pipeline** (`.github/workflows/build-apk.yml`) that compiles the native Android app and hosts the installable `.apk` file directly on GitHub.
+
+### 📥 Where to Download the Built APK from GitHub:
+1. **GitHub Releases (Direct Link)**:
+   - Go to your repository's **Releases** tab on GitHub:
+     `https://github.com/<YOUR_USER>/<YOUR_REPO>/releases`
+   - Download the latest **`RENEW-Household-Maintenance.apk`**.
+   - Tap the `.apk` on your Android device to install!
+
+2. **GitHub Actions Artifacts**:
+   - Go to the **Actions** tab on your GitHub repository.
+   - Click on the latest **"Build & Host Android APK"** run.
+   - Under **Artifacts**, download **`RENEW-Household-Maintenance-APK`**.
+
+### 🚀 How the Pipeline Works:
+- **On Every Push**: Every commit pushed to `main` / `master` runs the workflow on `ubuntu-latest`, sets up Java 17, installs the Android SDK, and executes `./gradlew assembleDebug`.
+- **Automatic Release Hosting**: The workflow automatically publishes or updates the **GitHub Release** tagged `latest` (or the specific version tag `v1.0.0`, etc.) and attaches the universal APK asset.
+- **Manual Trigger**: You can also trigger a fresh APK build on demand by going to **Actions → Build & Host Android APK → Run workflow**.
+
+---
+
+## 📱 2. Instant 1-Tap WebAPK Installation (Zero Build Required)
 
 - **Live Web App**: [https://ais-pre-zjyp6uokj7btok5ltaqc7s-187570358840.asia-east1.run.app](https://ais-pre-zjyp6uokj7btok5ltaqc7s-187570358840.asia-east1.run.app)
 - **Development App**: [https://ais-dev-zjyp6uokj7btok5ltaqc7s-187570358840.asia-east1.run.app](https://ais-dev-zjyp6uokj7btok5ltaqc7s-187570358840.asia-east1.run.app)
 
-> ### ⚡ Instant 1-Tap Android WebAPK Installation
-> 1. Open the **Live Web App** link in **Google Chrome** on your Android device.
-> 2. Tap the **Three Dots (⋮)** menu in Chrome.
+> ### ⚡ Install directly in Chrome on Android:
+> 1. Open the **Live Web App** link in **Google Chrome** on your Android phone.
+> 2. Tap the **Three Dots (⋮)** menu.
 > 3. Tap **"Install app"** / **"Add to Home screen"**.
-> 4. Chrome will instantly generate and install a native **WebAPK** onto your Android phone with an app icon in your app drawer, standalone full-screen window, and full offline caching.
+> 4. Android installs the standalone **WebAPK** onto your phone with an app icon in your app drawer, full offline caching, and full-screen window.
 
 ---
 
-## 🤖 Official Native Android App (Kotlin + Jetpack Compose)
+## 🤖 3. Native Android Kotlin Source Code Structure (`/android`)
 
-The complete native Android Studio source code is located in the **`/android`** directory of this repository.
+The complete native Android Studio source code is located in the **`/android`** directory:
 
-### 📦 Project Architecture
-- **Language**: Kotlin 1.9+
+- **Language & Framework**: Kotlin 1.9+, Android SDK 34 (Android 14)
 - **UI Toolkit**: Jetpack Compose with Material 3 & Bold Typography
-- **Database**: Android Room SQLite (100% offline, zero cloud account required)
-- **Background Tasks**: AndroidX WorkManager (for 24h periodic morning briefing reminders)
-- **Hardware Integration**: CameraX & Google ML Kit Barcode Scanning for physical QR appliance tags
+- **Database**: AndroidX **Room SQLite** (100% offline, zero cloud account required)
+- **Background Worker**: AndroidX **WorkManager** (`DailyReminderWorker`) for 24h periodic notifications
+- **Hardware Integration**: **CameraX** + **Google ML Kit Barcode Scanning** for physical QR appliance tags
 
-### 🛠️ How to Build the `.apk` File
-
-#### Option 1: Open in Android Studio (Recommended)
-1. Export/Download the project as a **ZIP** (or clone the repository via Git) from the AI Studio Settings menu.
-2. Open **Android Studio** (Hedgehog, Iguana, or Jellyfish).
-3. Click **File → Open** and select the **`android`** folder.
-4. Let Gradle sync dependencies.
-5. In the top menu, go to **Build → Build Bundle(s) / APK(s) → Build APK(s)**.
-6. Android Studio will generate the installable debug APK at:
-   ```
-   android/app/build/outputs/apk/debug/app-debug.apk
-   ```
-7. Transfer `app-debug.apk` to your Android device and tap to install!
-
-#### Option 2: Command Line (Gradle)
+### Building Locally with Android Studio / Gradle:
 ```bash
 cd android
 ./gradlew assembleDebug
 ```
-The compiled APK will be created at `app/build/outputs/apk/debug/app-debug.apk`.
+The compiled APK will be created at `android/app/build/outputs/apk/debug/app-debug.apk`.
 
 ---
 

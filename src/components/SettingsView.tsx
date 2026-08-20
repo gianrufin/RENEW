@@ -327,7 +327,63 @@ export function SettingsView({
         </div>
       </div>
 
-      {/* 4. Local Storage Health & Diagnostics */}
+      {/* 4. Native Android APK & GitHub Actions Hosting */}
+      <div className="p-6 border border-zinc-300 dark:border-[#262626] bg-white dark:bg-[#121212] space-y-4">
+        <div>
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-[10px] font-black tracking-[0.2em] uppercase px-2 py-0.5 border border-emerald-500 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+              GITHUB ACTIONS HOSTED
+            </span>
+            <span className="text-[10px] font-bold text-zinc-500 dark:text-[#737373] tracking-widest uppercase">
+              NATIVE ANDROID (.APK)
+            </span>
+          </div>
+          <h3 className="text-sm font-black uppercase tracking-widest text-zinc-900 dark:text-[#F5F5F5] flex items-center gap-2">
+            <HardDrive className="w-4 h-4 text-[#FF3E00]" />
+            NATIVE ANDROID APK & GITHUB CI/CD
+          </h3>
+          <p className="text-xs text-zinc-500 dark:text-[#737373] uppercase font-bold tracking-wider mt-0.5">
+            Every push to your GitHub repo automatically compiles and hosts the standalone universal Android APK on GitHub Releases.
+          </p>
+        </div>
+
+        <div className="p-4 border border-zinc-200 dark:border-[#262626] bg-zinc-50 dark:bg-[#171717] space-y-3">
+          <div className="flex items-start gap-3">
+            <div className="w-8 h-8 rounded-none border border-emerald-500/30 bg-emerald-500/10 flex items-center justify-center shrink-0 mt-0.5">
+              <ShieldCheck className="w-5 h-5 text-emerald-500" />
+            </div>
+            <div>
+              <h4 className="text-xs font-black uppercase tracking-wider text-zinc-900 dark:text-[#F5F5F5]">
+                Automated GitHub Releases & Artifacts Pipeline
+              </h4>
+              <p className="text-[11px] text-zinc-600 dark:text-[#A3A3A3] mt-1 leading-relaxed">
+                Workflow configured in <code className="text-xs text-[#FF3E00] font-mono bg-zinc-200 dark:bg-[#262626] px-1 py-0.5">.github/workflows/build-apk.yml</code>. Whenever code is pushed to <code className="text-xs font-mono">main</code> or a release tag is created, GitHub Actions builds <code className="text-xs font-mono font-bold">RENEW-Household-Maintenance.apk</code> and attaches it directly to the repository Releases for 1-click download.
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2">
+            <div className="p-3 border border-zinc-200 dark:border-[#262626] bg-white dark:bg-[#121212]">
+              <span className="text-[9px] font-black uppercase tracking-widest text-zinc-400 dark:text-[#737373] block">
+                OPTION 1: GITHUB RELEASES
+              </span>
+              <p className="text-xs font-bold text-zinc-800 dark:text-[#EDEDED] mt-1">
+                Go to GitHub &rarr; <strong>Releases</strong> &rarr; Download <span className="text-[#FF3E00]">.apk</span>
+              </p>
+            </div>
+            <div className="p-3 border border-zinc-200 dark:border-[#262626] bg-white dark:bg-[#121212]">
+              <span className="text-[9px] font-black uppercase tracking-widest text-zinc-400 dark:text-[#737373] block">
+                OPTION 2: CHROME WEBAPK
+              </span>
+              <p className="text-xs font-bold text-zinc-800 dark:text-[#EDEDED] mt-1">
+                Open in Chrome &rarr; Tap <strong>⋮</strong> &rarr; <strong>Install app</strong>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* 5. Local Storage Health & Diagnostics */}
       <div className="p-6 border border-zinc-300 dark:border-[#262626] bg-white dark:bg-[#121212] space-y-4">
         <div>
           <h3 className="text-sm font-black uppercase tracking-widest text-zinc-900 dark:text-[#F5F5F5] flex items-center gap-2">
