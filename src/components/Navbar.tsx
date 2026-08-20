@@ -6,7 +6,8 @@ import {
   Calendar, 
   Layers, 
   Search, 
-  QrCode
+  QrCode,
+  Download
 } from 'lucide-react';
 
 interface NavbarProps {
@@ -16,6 +17,7 @@ interface NavbarProps {
   onOpenCalendar: () => void;
   onOpenSplash: () => void;
   onOpenQR: () => void;
+  onOpenDownloadModal: () => void;
   searchQuery: string;
   onSearchChange: (query: string) => void;
   notificationPermission: NotificationPermission | 'default';
@@ -32,6 +34,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenCalendar,
   onOpenSplash,
   onOpenQR,
+  onOpenDownloadModal,
   searchQuery,
   onSearchChange,
   notificationPermission,
@@ -65,6 +68,16 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           {/* Action Buttons (Non-overlapping) */}
           <div className="flex items-center gap-1.5 sm:gap-2.5">
+            {/* Download APK CTA Button */}
+            <button
+              onClick={onOpenDownloadModal}
+              title="Download standalone Native Android APK"
+              className="px-2.5 sm:px-3 py-2 border-2 border-[#FF3E00] bg-[#FF3E00]/10 hover:bg-[#FF3E00] text-zinc-900 dark:text-[#F5F5F5] hover:text-black font-black text-xs uppercase tracking-wider flex items-center gap-1.5 transition-all cursor-pointer"
+            >
+              <Download className="w-3.5 h-3.5 text-[#FF3E00] group-hover:text-black" />
+              <span className="font-extrabold">APK</span>
+            </button>
+
             {/* Daily Briefing Splash */}
             <button
               onClick={onOpenSplash}

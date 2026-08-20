@@ -32,6 +32,7 @@ interface SettingsViewProps {
   showMorningSplash: boolean;
   onToggleMorningSplash: (val: boolean) => void;
   onOpenMorningSplash: () => void;
+  onOpenDownloadModal?: () => void;
 }
 
 export function SettingsView({
@@ -45,7 +46,8 @@ export function SettingsView({
   onRequestNotificationPermission,
   showMorningSplash,
   onToggleMorningSplash,
-  onOpenMorningSplash
+  onOpenMorningSplash,
+  onOpenDownloadModal
 }: SettingsViewProps) {
   const [localExported, setLocalExported] = useState(false);
   const [statusMessage, setStatusMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
@@ -363,21 +365,46 @@ export function SettingsView({
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2">
-            <div className="p-3 border border-zinc-200 dark:border-[#262626] bg-white dark:bg-[#121212]">
-              <span className="text-[9px] font-black uppercase tracking-widest text-zinc-400 dark:text-[#737373] block">
-                OPTION 1: GITHUB RELEASES
-              </span>
-              <p className="text-xs font-bold text-zinc-800 dark:text-[#EDEDED] mt-1">
-                Go to GitHub &rarr; <strong>Releases</strong> &rarr; Download <span className="text-[#FF3E00]">.apk</span>
-              </p>
+            <div className="p-3 border border-zinc-200 dark:border-[#262626] bg-white dark:bg-[#121212] flex flex-col justify-between">
+              <div>
+                <span className="text-[9px] font-black uppercase tracking-widest text-zinc-400 dark:text-[#737373] block">
+                  OPTION 1: NATIVE ANDROID APK
+                </span>
+                <p className="text-xs font-bold text-zinc-800 dark:text-[#EDEDED] mt-1">
+                  Download universal standalone <span className="text-[#FF3E00]">.apk</span> file
+                </p>
+              </div>
+              <div className="pt-2">
+                <a
+                  href="./RENEW-Household-Maintenance.apk"
+                  download="RENEW-Household-Maintenance.apk"
+                  onClick={(e) => {
+                    if (onOpenDownloadModal) {
+                      e.preventDefault();
+                      onOpenDownloadModal();
+                    }
+                  }}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#FF3E00] text-black font-black text-[10px] uppercase tracking-wider hover:bg-[#E03700] transition-colors"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  DOWNLOAD .APK
+                </a>
+              </div>
             </div>
-            <div className="p-3 border border-zinc-200 dark:border-[#262626] bg-white dark:bg-[#121212]">
-              <span className="text-[9px] font-black uppercase tracking-widest text-zinc-400 dark:text-[#737373] block">
-                OPTION 2: CHROME WEBAPK
-              </span>
-              <p className="text-xs font-bold text-zinc-800 dark:text-[#EDEDED] mt-1">
-                Open in Chrome &rarr; Tap <strong>⋮</strong> &rarr; <strong>Install app</strong>
-              </p>
+            <div className="p-3 border border-zinc-200 dark:border-[#262626] bg-white dark:bg-[#121212] flex flex-col justify-between">
+              <div>
+                <span className="text-[9px] font-black uppercase tracking-widest text-zinc-400 dark:text-[#737373] block">
+                  OPTION 2: CHROME WEBAPK
+                </span>
+                <p className="text-xs font-bold text-zinc-800 dark:text-[#EDEDED] mt-1">
+                  Open in Chrome &rarr; Tap <strong>⋮</strong> &rarr; <strong>Install app</strong>
+                </p>
+              </div>
+              <div className="pt-2">
+                <span className="text-[10px] font-mono font-bold text-emerald-500">
+                  INSTANT APP DRAWER
+                </span>
+              </div>
             </div>
           </div>
         </div>

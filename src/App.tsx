@@ -41,6 +41,8 @@ import { SettingsView } from './components/SettingsView';
 import { QRAssetModal } from './components/QRAssetModal';
 import { MorningSplashModal } from './components/MorningSplashModal';
 import { BottomNavBar } from './components/BottomNavBar';
+import { HeroLandingBanner } from './components/HeroLandingBanner';
+import { DownloadAPKModal } from './components/DownloadAPKModal';
 import { getTaskStatus, getDaysRemaining, calculateNextDueDate } from './utils/dateUtils';
 import { sound } from './utils/sound';
 
@@ -229,6 +231,7 @@ export default function App() {
   const [isQRModalOpen, setIsQRModalOpen] = useState(false);
   const [qrSelectedTask, setQrSelectedTask] = useState<MaintenanceTask | null>(null);
   const [isSplashOpen, setIsSplashOpen] = useState(false);
+  const [isDownloadModalOpen, setIsDownloadModalOpen] = useState(false);
 
   // Apply Theme effect to <html> classList
   useEffect(() => {
@@ -536,6 +539,7 @@ export default function App() {
         onOpenCalendar={() => setIsCalendarModalOpen(true)}
         onOpenSplash={() => setIsSplashOpen(true)}
         onOpenQR={() => handleOpenQRForTask()}
+        onOpenDownloadModal={() => setIsDownloadModalOpen(true)}
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
         notificationPermission={notificationPermission}
@@ -543,6 +547,13 @@ export default function App() {
         soundEnabled={soundEnabled}
         onToggleSound={handleToggleSound}
         overdueCount={overdueTasksCount}
+      />
+
+      {/* Hero Landing & APK Download CTA Banner */}
+      <HeroLandingBanner
+        onOpenDownloadModal={() => setIsDownloadModalOpen(true)}
+        onOpenPresets={() => setIsPresetsModalOpen(true)}
+        onOpenAI={() => setIsAIAssistantOpen(true)}
       />
 
       {/* Main Content View Switcher */}
@@ -733,6 +744,7 @@ export default function App() {
             showMorningSplash={true}
             onToggleMorningSplash={() => {}}
             onOpenMorningSplash={() => setIsSplashOpen(true)}
+            onOpenDownloadModal={() => setIsDownloadModalOpen(true)}
           />
         )}
       </main>
@@ -829,6 +841,11 @@ export default function App() {
         onComplete={handleOpenComplete}
         onSnooze={handleSnoozeTask}
         onViewTask={(t) => { setEditingTask(t); setIsTaskModalOpen(true); }}
+      />
+
+      <DownloadAPKModal
+        isOpen={isDownloadModalOpen}
+        onClose={() => setIsDownloadModalOpen(false)}
       />
     </div>
   );
