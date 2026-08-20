@@ -1,4 +1,4 @@
-name: Build & Host Android APK
+name: Build & Host Android APK and GitHub Pages
 
 on:
   push:
@@ -17,10 +17,16 @@ on:
 
 permissions:
   contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
 
 jobs:
-  build:
-    name: Build Android APK
+  build-and-deploy:
+    name: Build Android APK & Deploy
     runs-on: ubuntu-latest
 
     steps:
@@ -29,6 +35,20 @@ jobs:
         with:
           fetch-depth: 0
 
+      # 1. Setup Node.js & Build Web App
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install Web Dependencies
+        run: npm ci
+
+      - name: Build Web Application
+        run: npm run build
+
+      # 2. Setup Java, Gradle & Build Native Android APK
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
@@ -40,7 +60,7 @@ jobs:
         with:
           gradle-version: '8.6'
 
-      - name: Ensure Gradle Wrapper Jar
+      - name: Ensure Gradle Wrapper & Config
         run: |
           mkdir -p android/gradle/wrapper
           if [ ! -f android/gradle/wrapper/gradle-wrapper.jar ]; then
@@ -49,6 +69,12 @@ jobs:
             curl -sSL -o android/gradle/wrapper/gradle-wrapper.jar https://repo.maven.apache.org/maven2/org/gradle/gradle-wrapper/8.6/gradle-wrapper-8.6.jar || true
           fi
           chmod +x android/gradlew
+          
+          # Ensure gradle.properties exists with AndroidX enabled
+          if [ ! -f android/gradle.properties ]; then
+            echo "android.useAndroidX=true" >> android/gradle.properties
+            echo "android.nonTransitiveRClass=true" >> android/gradle.properties
+          fi
 
       - name: Accept Android SDK Licenses
         run: |
@@ -56,20 +82,23 @@ jobs:
 
       - name: Build Debug APK
         working-directory: ./android
-        run: ./gradlew assembleDebug --no-daemon --stacktrace
+        run: ./gradlew assembleDebug --no-daemon --stacktrace -Dandroid.useAndroidX=true
 
-      - name: Verify and Prepare APK
+      - name: Prepare APK Artifacts & Bundle into Web Dist
         run: |
           mkdir -p build-output
           if [ -f android/app/build/outputs/apk/debug/app-debug.apk ]; then
             cp android/app/build/outputs/apk/debug/app-debug.apk build-output/RENEW-Household-Maintenance.apk
-            echo "APK successfully built: $(ls -lh build-output/RENEW-Household-Maintenance.apk)"
+            # Also place APK inside dist for direct GitHub Pages web download
+            cp build-output/RENEW-Household-Maintenance.apk dist/RENEW-Household-Maintenance.apk
+            echo "APK successfully built and bundled into web build: $(ls -lh build-output/RENEW-Household-Maintenance.apk)"
           else
             echo "Error: app-debug.apk not found!"
             find android/app/build -name "*.apk" || true
             exit 1
           fi
 
+      # 3. Upload APK to GitHub Artifacts
       - name: Upload APK to GitHub Artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -77,6 +106,23 @@ jobs:
           path: build-output/RENEW-Household-Maintenance.apk
           retention-days: 90
 
+      # 4. Deploy Web App & Hosted APK to GitHub Pages
+      - name: Setup GitHub Pages
+        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+        uses: actions/configure-pages@v5
+
+      - name: Upload GitHub Pages Artifact
+        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './dist'
+
+      - name: Deploy to GitHub Pages
+        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+      # 5. Publish Release with APK Asset to GitHub Releases
       - name: Publish APK to GitHub Releases
         if: startsWith(github.ref, 'refs/tags/') || (github.event_name == 'workflow_dispatch' && github.event.inputs.create_release == 'true') || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
         uses: softprops/action-gh-release@v2
@@ -90,6 +136,10 @@ jobs:
             
             ### ⬇️ Download Direct APK
             - **[Download RENEW-Household-Maintenance.apk](https://github.com/${{ github.repository }}/releases/download/${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'latest' }}/RENEW-Household-Maintenance.apk)**
+            
+            ### 🌐 Live GitHub Pages App & Direct Hosted Download:
+            - **Web App**: `https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/`
+            - **Hosted APK**: `https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/RENEW-Household-Maintenance.apk`
             
             ### 📦 Build Details:
             - **Commit**: `${{ github.sha }}`
